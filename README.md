@@ -36,3 +36,21 @@ Utilise machine learning and engineering skills to design a suitable architectur
 
 ## Setup
 
+To create a new environment with Python version 3.9:
+```bash
+conda create -n <env_name> python=3.9 
+```
+
+We can then activate this environment:
+```bash
+conda activate <env_name>
+```
+
+And install all relevent requirements:
+```bash
+pip install -r requirements.txt
+```
+
+## Containerise with Docker
+
+## Run FastAPI
