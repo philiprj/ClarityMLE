@@ -23,5 +23,16 @@ Utilise machine learning and engineering skills to design a suitable architectur
 
 ## Plan
 
+- [ ] Create prediction API
+- [ ] Batch prediction vs online prediction
+- [ ] Auto scalling and load balancing
+- [ ] Model performance monitoring and engineering metrics
+- [ ] Model compression
+- [ ] Cloud deployment 
+- [ ] Containerisation
+- [ ] Data Distribution Shifts
+- [ ] Model registry (mlFlow)
+- [ ] Continual learning
+
 ## Setup
 
