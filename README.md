@@ -34,6 +34,12 @@ Utilise machine learning and engineering skills to design a suitable architectur
 - [ ] Model registry (mlFlow)
 - [ ] Continual learning
 
+## Considerations out of scope
+
+* Test in production - Shadow Testing, A/B Testing, Canary Release, Bandits
+* Pre model development stages of ML lifecycle - Data Engineering, Training Data, Feature Engineering, Model Development and Testing
+* Human-in-the-loop feedback. For low probability predictions we may want to include human feedback/labels. Interesting video of the topic of how poorly written addresses are handled [here](https://www.youtube.com/watch?v=XxCha4Kez9c).
+
 ## Setup
 
 To create a new environment with Python version 3.9:
