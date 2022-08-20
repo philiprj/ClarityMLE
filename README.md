@@ -27,9 +27,9 @@ Utilise machine learning and engineering skills to design a suitable architectur
 - [ ] Batch prediction vs online prediction
 - [ ] Auto scalling and load balancing
 - [ ] Model performance monitoring and engineering metrics
-- [ ] Model compression
-- [ ] Cloud deployment 
-- [ ] Containerisation
+- [ ] Model compression - consider Quantisation of model, e.g. using half-precision (16-bit) or fixed-point (8-bit ints) to represent model paramters. This should reduce computation and memory footprint, but may drop accuracy too much. 
+- [ ] Cloud deployment - Consider using AWS for deployment. 
+- [ ] Containerisation - Docker container 
 - [ ] Data Distribution Shifts
 - [ ] Model registry (mlFlow)
 - [ ] Continual learning
@@ -39,6 +39,8 @@ Utilise machine learning and engineering skills to design a suitable architectur
 * Test in production - Shadow Testing, A/B Testing, Canary Release, Bandits
 * Pre model development stages of ML lifecycle - Data Engineering, Training Data, Feature Engineering, Model Development and Testing
 * Human-in-the-loop feedback. For low probability predictions we may want to include human feedback/labels. Interesting video of the topic of how poorly written addresses are handled [here](https://www.youtube.com/watch?v=XxCha4Kez9c).
+* Batch features - The only features for this app come streaming from the request. More complex model applications may use a combination of streaming and batch features. Batch features may be stored in data warehouses, for example we may store the median food preperation time for a restaurant when predicting the estimated delivery time for a food delivery app. 
+* 
 
 ## Setup
 
