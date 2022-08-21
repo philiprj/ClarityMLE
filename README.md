@@ -61,4 +61,18 @@ pip install -r requirements.txt
 
 ## Containerise with Docker
 
+To containerise the application with Docker run the below from the root directory:
+
+```bash
+docker build -t <image_name> .
+```
+
+```bash
+docker run -p 8080:8080 -d <image_name>
+```
+
+Then visit http://0.0.0.0:8080/docs to see the interactive Swagger UI for the prediction API. Here you can test the prediction by linking to you own images. For example using the URL [here](https://camo.githubusercontent.com/3d9666a8f0c5658667292b74ca19295827c2b22a0e903db283998ae213e6f6e1/68747470733a2f2f646174616d61646e6573732e6769746875622e696f2f6173736574732f696d616765732f74665f66696c655f666565642f4d4e4953545f64696769742e706e67).
+
+A library of MNIST .jpg images can be found on [Kaggle](https://www.kaggle.com/datasets/scolianni/mnistasjpg).
+
 ## Run FastAPI
