@@ -51,7 +51,7 @@ Both evaluation and training data is from the MNIST grayscale images of the 10 d
 
 The following figure shows the confusion matrix for the model on the test data. We see no obvious bias towards misclassificaion of any class.
 
-![Confusion matrix](media/confusion.png "Confusion matrix")
+<img src="media/confusion.png" alt="Confusion matrix" width="400"/>
 
 ## Ethical Considerations
 
