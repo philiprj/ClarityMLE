@@ -35,13 +35,23 @@ async def root():
 
 
 @app.post("/predict/batch")
-async def predict_array(images: list):
+async def predict_array(images: dict):
+    """Predicts the digits for a batch of images.
+
+    Args:
+        images (dict): images['x'] should be features of image
+
+    Returns:
+        preds (JSON): return['y'] is the predicted labels
+    """
+    # Extract the images from the dictionary
+    images = images["x"]
     # Process batch of images
     image = preprocess_batch(images)
     # predict class
-    pred = predict(model=model, image=image)
-
-    return {"y": str(pred)}
+    preds = predict(model=model, image=image)
+    # Return list of predictions
+    return {"y": preds.tolist()}
 
 
 @app.post("/predict/img")

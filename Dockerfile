@@ -15,16 +15,19 @@ COPY requirements.txt requirements.txt
 # Install application dependencies from the requirements file
 RUN pip install -r requirements.txt
 
-# Copy files
+# Copy API scripts
 COPY  scripts/ scripts/
 
+# Copy models from model registry
 COPY models/ models/
 
+# Copy setup to install helper library
 COPY setup.py setup.py
 
+# Helper library in src
 COPY src/ src/
 
-# Install the src package
+# Install the src package and remove the src directory
 RUN pip install --no-cache-dir . && rm -r src
 
 # Run the python application
