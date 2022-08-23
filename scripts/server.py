@@ -14,7 +14,11 @@ origins = ["*"]
 methods = ["*"]
 headers = ["*"]
 app.add_middleware(
-    CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=methods, allow_headers=headers
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=methods,
+    allow_headers=headers,
 )
 
 version = 1
