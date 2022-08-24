@@ -28,12 +28,11 @@ Utilise machine learning and engineering skills to design a suitable architectur
 
 ## Plan
 
-- [X] Create prediction API using FastAPI. (alternatives such as TensorFlow and PyTorch Serving could acheive a similar effect).
+- [X] Create inference API using FastAPI. (alternatives such as Flask, TensorFlow and PyTorch Serving could acheive a similar effect). Why an API? By creating a standalone inference miscroservice, the model can be intergrated with a number of apps which can call the API as a black box, rather than worry about what is going on under the hood. 
 - [X] Containerisation - Docker container for the prediction API.
 - [X] Batching online prediction for performance. Can batch list inputs, currently no batch endpoint for raw image files. 
-- [ ] Model registry (mlFlow).
-- [ ] Cloud deployment - AWS for deployment using EC2 instance. In future could test hardware acceleration such as GPUs and AWS Inferentia.
-- [ ] Auto scalling and load balancing.
+- [ ] Cloud deployment - AWS for deployment using Elastic Beanstalk with EC2 instances. In future could test hardware acceleration such as GPUs and AWS Inferentia. With more time, we would set up a data streaming solution (AWS Kinesis or Apache Kafka) and a real-time analytics service (Apache Flink) in order to manage the auto-scaling in response to traffic paterns. "Serveless" solutions such as AWS Lambda were considered but given the buisiness context would expect some consistant level of traffic, it was deemed unsuitable. Kubernetes based solutions were also considered, using EKS/ECS, but due to the smaller scale and cost considerations of the project these were not pursued. 
+- [ ] Auto scalling and load balancing - Our Elastic Beanstalk service creates an Auto Scaling Group and Elastic Load Balancer to route trafic to the EC2 instances running our endpoints. 
 - [ ] Application Monitoring - metrics, logs, tracing (API latency, log errors, service health metrics).
 - [ ] Model Observability - prediction distribtion (compared to training distribution), data quality. A model card with the key model metrics and details can be seen in the docs directory.  
 
@@ -84,9 +83,42 @@ Then visit http://0.0.0.0:8080/docs to see the interactive Swagger UI for the pr
 
 A library of MNIST .jpg images can be found on [Kaggle](https://www.kaggle.com/datasets/scolianni/mnistasjpg).
 
+## Deploy to AWS
+
+To push the container to AWS Elastic Container Registry (ECR) run from the root:
+
+```bash
+sh aws/build_push.sh
+```
+
+In order for this to push to you AWS account, you must have the below details in you '.aws/credentials' file, 
+
+```bash
+[default]
+aws_access_key_id = <YOUR_AWS_ACCESS_KEY_ID>
+aws_secret_access_key = <YOUR_SECRET_ACCESS_KEY>
+region = <DEFAULT-REGION>
+```
+
+Which can also be configured by running:
+
+```bash
+aws configure
+```
+
+When we make changes to our source repo, we can run this script again to push the latest version of our app to the registry, and with a CloudFormation or Terraform script, we could automatically redeploy our infrastructure with the latest version. This is a key component of the standard CI/CD pipeline. Ideally, given more time, we would impliment more complete unit tests and model performance based testing which would need to be passed before any existing app was updated with the latest version. 
+
+To provision the infrastructure using AWS Elastic Beanstalk, first create an S3 bucket to upload the Dockerrun.aws.json file (you may also need to edit this file with your appropriate image URI), then run:
+
+```bash
+aws s3 cp Dockerrun.aws.json s3://<your_s3_bucket_name>/Dockerrun.aws.json
+```
+
+Now go to AWS Elastic Beanstalk and create and app with the Docker Platform
+
 ## Testing
 
-* Functional Testing -- assert expected output for given inputs.
+* Functional Testing - assert expected output for given inputs.
 * Statistical - test API on unseen request, and check prediction distribtuion against trining prediction distribution.
 * Error handling - how do we handle bad inputs.
 * Load testing - test API with x inputs over y seconds

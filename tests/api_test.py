@@ -16,7 +16,10 @@ x_test = np.expand_dims(x_test, -1)
 # normalize pixel values
 x_test = x_test.astype("float32") / 255.0
 
-url = "http://0.0.0.0:8080/predict/batch"
+# local server
+# url = "http://0.0.0.0:8080/predict/batch"
+# AWS server
+url = "http://clarityapi-env-1.eba-289rmxee.eu-west-1.elasticbeanstalk.com/predict/batch"
 
 
 def make_prediction(instances):
