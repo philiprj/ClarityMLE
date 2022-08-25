@@ -3,8 +3,7 @@ from tensorflow.keras.utils import get_file, load_img, img_to_array
 import tensorflow as tf
 from tensorflow.nn import softmax
 from typing import Union
-
-# from tensorflow import keras
+import warnings
 
 
 def NormalizeData(data: Union[np.array, tf.Tensor]) -> Union[np.array, tf.Tensor]:
@@ -33,7 +32,7 @@ def preprocess(image_link: str) -> tf.Tensor:
     return img_array
 
 
-def preprocess_batch(images: list) -> tf.Tensor:
+def preprocess_batch(img: list) -> tf.Tensor:
     """In a list of batch images, processes them and returns a tensor
 
     Args:
@@ -43,14 +42,22 @@ def preprocess_batch(images: list) -> tf.Tensor:
         img (tf.Tensor): Tensorflow tensor of the image
     """
     # Convert list to tf.Tensor
-    img = tf.convert_to_tensor(images, dtype="float32")
-    # Load image and resize and colour
+    img = tf.convert_to_tensor(img, dtype="float32")
+    # If single image, add dimension for batch size and colour chanels
+    if len(img.shape) == 2:
+        img = tf.expand_dims(img, 0)
+        img = tf.expand_dims(img, -1)
+    # If batch image, add dimension colour chanels
+    elif len(img.shape) == 3:
+        img = tf.expand_dims(img, -1)
+    # If the shape is not as expected, raise a warning that the image may be not valid
+    if img.shape[1] != 28:
+        warnings.warn("Warning the image shape is not 28 x 28, reshaping!")
+    # Load image and resize
     img = tf.image.resize(img, size=(28, 28))
+    # Convert to grayscale if colour
     if img.shape[-1] != 1:
         img = tf.image.rgb_to_grayscale(img)
-    # Expand dimensions for input shape
-    if len(img.shape) == 3:
-        img = tf.expand_dims(img, 0)
     # Nomralise [0, 1]
     img = NormalizeData(img)
     return img

@@ -23,8 +23,8 @@ Utilise machine learning and engineering skills to design a suitable architectur
 ### Service Level Objectives (SLOs)
 
 - [ ] 99.99% uptime
-- [ ] 500 predictions within 2s
-- [ ] Dashboard to show the relevent engineering metrics and model observability
+- [ ] 500 predictions within 2s (tested in unit_test.py with 2 async calls)
+- [ ] Dashboard to show the relevent engineering metrics and model observability (AWS CloudWatch)
 
 ## Plan
 
@@ -114,7 +114,11 @@ To provision the infrastructure using AWS Elastic Beanstalk, first create an S3 
 aws s3 cp Dockerrun.aws.json s3://<your_s3_bucket_name>/Dockerrun.aws.json
 ```
 
-Now go to AWS Elastic Beanstalk and create and app with the Docker Platform
+Now go to AWS Elastic Beanstalk console and create an app using the Docker Platform and a source code origin pointing to the S3 bucket created, e.g. 
+
+<img src="docs/media/elb.png" alt="Elastic Beanstalk setup" width="400"/>
+
+Then click "Create Environment" and wait a few minutes for the infrastructure to setup. Once completed you should now be able call the img or batch prediction endpoint by following the link provided, for example: "http://clarityapi-env-1.eba-289rmxee.eu-west-1.elasticbeanstalk.com/predict/batch". The batch prediction has a limit of under 500 predictions per call. 
 
 ## Testing
 

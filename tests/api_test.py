@@ -1,3 +1,4 @@
+"""Module performs statisitcal testing of the API"""
 import matplotlib.pyplot as plt
 import requests
 import json
@@ -16,14 +17,9 @@ x_test = np.expand_dims(x_test, -1)
 # normalize pixel values
 x_test = x_test.astype("float32") / 255.0
 
-# local server
-# url = "http://0.0.0.0:8080/predict/batch"
-# AWS server
-url = "http://clarityapi-env-1.eba-289rmxee.eu-west-1.elasticbeanstalk.com/predict/batch"
 
-
-def make_prediction(instances):
-    data = json.dumps({"x": instances.tolist()})
+def make_prediction(instances, url):
+    data = json.dumps({"x": instances})
     headers = {"accept": "application/json", "content-type": "application/json"}
     json_response = requests.post(url, data=data, headers=headers)
     if json_response.status_code == 200:
@@ -42,7 +38,7 @@ if __name__ == "__main__":
         type=int,
         help="Number of instances to predict",
         required=False,
-        default=250,
+        default=50,
     )
     parser.add_argument(
         "-p",
@@ -52,13 +48,30 @@ if __name__ == "__main__":
         required=False,
         default=False,
     )
+
+    parser.add_argument(
+        "-l",
+        "--local",
+        type=bool,
+        help="Test local deployment",
+        required=False,
+        default=False,
+    )
+
     args = parser.parse_args()
     i = args.num_instances
+
+    if args.local:
+        url = "http://localhost:8000/predict/batch"
+    else:
+        # AWS server
+        url = "http://clarityapi-env-1.eba-289rmxee.eu-west-1.elasticbeanstalk.com/predict/batch"
+
     # Get a slice of the test data
-    x, y = x_test[0:i], y_test[0:i].tolist()
+    x, y = x_test[0:i].tolist(), y_test[0:i].tolist()
     # Make predictions and report time
     start = time.time()
-    predictions = make_prediction(x)
+    predictions = make_prediction(x, url)
     end = time.time()
     # Return the time and accuracy
     print("Time: {:.4f}s".format(end - start))

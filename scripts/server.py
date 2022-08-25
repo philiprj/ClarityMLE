@@ -49,9 +49,19 @@ async def predict_array(images: dict):
         preds (JSON): return['y'] is the predicted labels
     """
     # Extract the images from the dictionary
-    images = images["x"]
+    try:
+        images = images["x"]
+    except KeyError:
+        raise HTTPException(status_code=400, detail="No images found")
+    if not len(images):
+        raise HTTPException(status_code=400, detail="No images found")
     # Process batch of images
-    image = preprocess_batch(images)
+    try:
+        image = preprocess_batch(images)
+    except ValueError:
+        raise HTTPException(
+            status_code=400, detail="Invalid image. Image should be 28x28, grayscale"
+        )
     # predict class
     preds = predict(model=model, image=image)
     # Return list of predictions
