@@ -93,10 +93,10 @@ If you would like to containerise the application to run locally run the below f
 
 ```bash
 docker build -t <image_name> .
-docker run -p 8080:8080 -d <image_name>
+docker run -p 80:80 -d <image_name>
 ```
 
-Then visit http://0.0.0.0:8080/docs to see the interactive Swagger UI for the prediction API. The Swagger UI contains the API documentation, including expected inputs, outputs, and error messages.
+Then visit http://0.0.0.0:80/docs to see the interactive Swagger UI for the prediction API. The Swagger UI contains the API documentation, including expected inputs, outputs, and error messages.
 
 Here you can test the prediction by linking to your own images. For example using the URL [here](https://camo.githubusercontent.com/3d9666a8f0c5658667292b74ca19295827c2b22a0e903db283998ae213e6f6e1/68747470733a2f2f646174616d61646e6573732e6769746875622e696f2f6173736574732f696d616765732f74665f66696c655f666565642f4d4e4953545f64696769742e706e67).
 
@@ -112,18 +112,60 @@ sh aws/build_push.sh
 
 When we make changes to our source repo, we can run this script again to push the latest version of our app to the registry. With a CloudFormation or Terraform script, we could automatically redeploy our infrastructure with the latest version. This is a key component of the standard CI/CD pipeline. Ideally, given more time, we would implement more complete unit tests and model performance-based testing which would need to be passed before any existing app was updated with the latest version. 
 
-To provision the infrastructure using AWS Elastic Beanstalk, first, create an S3 bucket to upload the Dockerrun.aws.json file (you may also need to edit this file with your appropriate image URI). You can do this using the AWS CLI using the below command from the AWS directory (replacing <your_s3_bucket_name> with desired bucket name):
+To provision the infrastructure using AWS Elastic Beanstalk we may use the console of AWS CLI. 
+
+### Option: 1 Console
+
+First, create an S3 bucket to upload the Dockerrun.aws.json file (you may also need to edit this file with your appropriate image URI). You can do this using the AWS CLI using the below command from the AWS directory (replacing <your_s3_bucket_name> with desired bucket name):
 
 ```bash
-aws s3 mb "s3://<your_s3_bucket_name>"
-aws s3 cp "Dockerrun.aws.json" "s3://<your_s3_bucket_name>/Dockerrun.aws.json"
+aws s3 mb "s3://<s3_bucket_name>"
+aws s3 cp "Dockerrun.aws.json" "s3://<s3_bucket_name>/Dockerrun.aws.json"
 ```
 
-Now go to AWS Elastic Beanstalk console and create an app using the Docker Platform and a source code origin pointing to the S3 bucket created, e.g. 
+You can then create an Elastic Beanstalk deployment through the AWS Console using the Docker Platform and source code origin point to the S3 bucket created, as shown in the figure below.
 
-<img src="docs/media/elb.png" alt="Elastic Beanstalk setup" width="400"/>
+<p align="center">
+    <img src="docs/media/elb.png" alt="Elastic Beanstalk setup" width="400"/>
+</p>
 
-Then click "Create Environment" and wait a few minutes for the infrastructure to setup. Once completed you should now be able call the img or batch prediction endpoint by following the link provided, for example: "http://clarityapi-env-1.eba-289rmxee.eu-west-1.elasticbeanstalk.com/predict/batch". The batch prediction has a limit of around 100 predictions per call due to the data transfer limit. 
+### Option 2: AWS and EB CLI
+
+Alternatively, we can use the AWS EB CLI to provision our infrastructure. The installation process for the EB CLI can be found [here](https://github.com/aws/aws-elastic-beanstalk-cli-setup).
+
+Once installed, move to the AWS directory and run the below with an appropriate name, e.g clarity-api:
+
+```bash
+eb init <application_name> --platform Docker
+```
+
+Then we can create an environment with an appropriate configuration. The first option below creates a simple environment with a single t2.mirco instance. The second option creates an environment with an Auto Scaling Group, Load Balancer, and Spot Instances to better scale with increased traffic and reduces costs through the use of Spot Instances rather than on-demand. 
+
+Simple deployment with a single instance:
+```bash
+eb create <env_name> --single --instance-type "t2.micro"
+```
+
+Advanced deployment with Auto Scaling, Load Balancer, and Spot Instances:
+```bash
+eb create <env_name> --elb-type classic --enable-spot --instance-types "t2.micro,t2.small" --min-instances 1 --max-instances 2
+```
+
+Once completed we are now able to call the image or batch prediction endpoint by following the link provided. The URL should be:
+
+```
+URL = http://<env_name>.eba-289rmxee.eu-west-1.elasticbeanstalk.com
+```
+
+With the batch prediction having the '/prediction/batch' route. 
+
+I have left the advanced endpoint live, and will keep it live until **01/09/22**. This API can be reached at:
+
+```
+URL = http://clarity-api-advanced.eba-289rmxee.eu-west-1.elasticbeanstalk.com/
+```
+
+The batch prediction endpoint has a limit of around 100 predictions per call due to the data transfer limit. If testing the image endpoint ("/predict/img" for jpg/png), please ensure the image URL provided is public. 
 
 ## Testing
 
@@ -155,8 +197,9 @@ Using the -p True flag we can also return a plot of the prediction distribution.
 ```bash
 python3 api_test.py -n 100 -p True
 ```
-
-<img src="docs/media/histogram.png" alt="Prediction histogram" width="400"/>
+<p align="center">
+    <img src="docs/media/histogram.png" alt="Prediction histogram" width="400"/>
+</p>
 
 ### Unit testing
 

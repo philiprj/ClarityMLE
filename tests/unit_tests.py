@@ -4,6 +4,8 @@
     - Scaling of the number of instances
     - Asserting correct errors
 
+    If using a different deployment, change the url to the correct endpoint.
+
 """
 import json
 import numpy as np
@@ -22,9 +24,9 @@ with np.load(data_path.joinpath("cifar_test.npz"), allow_pickle=True) as f:
     x_cifar, y_cifar = f["x"], f["y"]
 
 # Deployed endpoint
-url = "http://clarityapi-env-1.eba-289rmxee.eu-west-1.elasticbeanstalk.com"
+url = "http://clarity-api-advanced.eba-289rmxee.eu-west-1.elasticbeanstalk.com"
 # Local endpoint
-# url = "http://0.0.0.0:8080"
+# url = "http://0.0.0.0:80"
 
 
 @pytest.mark.asyncio

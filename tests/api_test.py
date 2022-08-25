@@ -1,4 +1,7 @@
-"""Module performs statisitcal testing of the API"""
+"""Module performs statisitcal testing of the API
+
+If using a different deployment, change the url to the correct endpoint
+"""
 import matplotlib.pyplot as plt
 import requests
 import json
@@ -43,29 +46,25 @@ if __name__ == "__main__":
     parser.add_argument(
         "-p",
         "--plot",
-        type=bool,
-        help="Show histogram of predictions",
+        help="Show histogram of predictions [True/False]",
         required=False,
-        default=False,
+        default="False",
     )
 
     parser.add_argument(
-        "-l",
-        "--local",
-        type=bool,
-        help="Test local deployment",
-        required=False,
-        default=True,
+        "-l", "--local", help="Test local deployment [True/False]", required=False, default="True"
     )
 
     args = parser.parse_args()
     i = args.num_instances
 
-    if args.local:
-        url = "http://localhost:8000/predict/batch"
+    if args.local == "True":
+        url = "http://localhost:80/predict/batch"
     else:
         # AWS server
-        url = "http://clarityapi-env-1.eba-289rmxee.eu-west-1.elasticbeanstalk.com/predict/batch"
+        url = (
+            "http://clarity-api-advanced.eba-289rmxee.eu-west-1.elasticbeanstalk.com/predict/batch"
+        )
 
     # Get a slice of the test data
     x, y = x_test[0:i].tolist(), y_test[0:i].tolist()
@@ -79,7 +78,7 @@ if __name__ == "__main__":
     print("Accuracy: {:.2f}%".format(accuracy * 100))
     distribution = Counter(predictions)
     distribution = OrderedDict(sorted(distribution.items()))
-    if args.plot:
+    if args.plot == "True":
         labels, values = zip(*distribution.items())
         indexes = np.arange(len(labels))
         plt.bar(labels, values)
