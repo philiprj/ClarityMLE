@@ -43,7 +43,7 @@ async def predict_array(images: dict):
     """Predicts the digits for a batch of images.
 
     Args:
-        images (dict): images['x'] should be features of image
+        images (dict | JSON): images['x'] should be the image features in a list format.
 
     Returns:
         preds (JSON): return['y'] is the predicted labels
@@ -73,7 +73,7 @@ async def predict_image(image_link: str = ""):
     """Predicts single image class from file upload
 
     Args:
-        file (bytes, optional): Upload a image file. Defaults to File(...).
+        image_link (str, optional): Public image url for prediction.
 
     Returns:
         pred (JSON): JSON object with predicted class and probability

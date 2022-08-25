@@ -55,7 +55,7 @@ if __name__ == "__main__":
         type=bool,
         help="Test local deployment",
         required=False,
-        default=False,
+        default=True,
     )
 
     args = parser.parse_args()
