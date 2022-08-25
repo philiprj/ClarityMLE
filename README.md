@@ -126,7 +126,7 @@ aws s3 cp "Dockerrun.aws.json" "s3://<s3_bucket_name>/Dockerrun.aws.json"
 You can then create an Elastic Beanstalk deployment through the AWS Console using the Docker Platform and source code origin point to the S3 bucket created, as shown in the figure below.
 
 <p align="center">
-    <img src="docs/media/elb.png" alt="Elastic Beanstalk setup" width="400"/>
+    <img src="docs/media/elb.png" alt="Elastic Beanstalk setup" width="450"/>
 </p>
 
 ### Option 2: AWS and EB CLI
@@ -216,6 +216,14 @@ The test suite then asynchronously calls the batch prediction API with a batch o
 To check the API handles unusual inputs appropriately we also pass misshapen or missing data. For some of these inputs, the endpoint is expected to handle with input processing, whilst still raising warning messages that the image processing may degrade performance. Specifically passing a colour image that is not 28x28 pixels. The endpoint is also expected to handle individual image predictions as well as batches. For other inputs, the endpoint is expected to produce helpgul error messages, for example when passing a non-square image, or failing to pass image features. 
 
 Note: these tests call the live endpoint deployed to AWS, but this will be torn down after a short period to save costs. 
+
+## AWS Monitoring - CloudWatch
+
+Through the infrastructure setup using Elastic Beanstalk, we also set up an AWS CloudWatch Monitoring job, from which we can view the key engineering metrics for our deployed API. From here we can also set up Alarms which can be configured to send a notification to the email provided when certain thresholds are breached. A snapshot of the dashboard is shown below:
+
+<p align="center">
+    <img src="docs/media/monitoring.png" alt="Prediction histogram" width="500"/>
+</p>
 
 ## Tear Down
 
