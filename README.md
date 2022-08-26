@@ -190,7 +190,7 @@ To assess the production endpoint we have created a set of tests for the endpoin
 * Load testing - test API with x inputs over y seconds to ensure is scales appropriately and has optimal CPU/GPU utilisation. 
 * End-to-end - validate all subsystems are working as expected. 
 
-We can perform basic API testing using the api_test.py script in the test directory. This script can either be used with a local Docker conainter running or testing the hosted endpoint by setting the "--local" flag to True for local testing or False for testing the hosted endpoint. To test locally whilst running the docker container on port 8080, from the root directory run:
+We can perform basic API testing using the api_test.py script in the test directory. This script can either be used with a local Docker conainter running or testing the hosted endpoint by setting the "--local" flag to True for local testing or False for testing the hosted endpoint. To test locally whilst running the docker container on port 80, from the root directory run:
 
 ```bash
 cd tests
