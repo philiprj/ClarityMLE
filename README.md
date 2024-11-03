@@ -1,25 +1,8 @@
-# ClarityMLE
-Clarity AI Machine Learning Engineering Test
+# Model Deployment Experiment
 
-## Purpose 
-* How you take the business context into account
-* What approaches did you consider and why did you choose the final one in particular
-* Technical proficiency and best practices
-* What you would do differently if you had more time
+Exploration of model deployment for handwritten digit classifier.
 
-## The Task
-One of the data scientists in the team hands you a model in the form of a notebook and asks you to deploy it in production. It is a model that can recognise handwritten digits.
-
-Example use case: 
-* Postal service looking to recognise numerical postal codes
-* Online prediction, with up to 100 requests per second
-* Must have latency of less the couple of seconds
-* Could be a variable load, e.g. multiple postal trucks arriving at once
-* No existing baseline model in production 
-* Assume the given model is the best model developed 
-
-Utilise machine learning and engineering skills to design a suitable architecture and develop deployable code to run model training and inference. Part, if not all, of your solution, should be written in Python, as this is the language in which the model has been developed. Your design should take into consideration how the model will be used in practice.
-### Service Level Objectives (SLOs)
+## Service Level Objectives (SLOs)
 
 - [X] 99.99% uptime - tested over 24 hours (no downtime).
 - [X] 500 predictions within 4s (tested in unit_test.py with 5 asynchronous calls of 100 images).
@@ -28,52 +11,20 @@ Utilise machine learning and engineering skills to design a suitable architectur
 
 ## Plan
 
-The plan for this solution involves creating an online inference REST API which takes JSON input holding a list of images, with features represented as floats in a list. This enables us to batch together predictions for more efficient inference. In a real-world deployment, and given more time here, we would have to consider how these online inputs would be dynamically batched using a data streaming solution, such as AWS Kinesis, TorchServe, or Apache Kafka/Flink. This would aggregate inputs over a defined window (either time or input count), and then batch them for inference. When inputs are passed to the endpoint, they are passed to a preprocessing helper function, which can convert differently sized images or colour images, to the appropriate format. It ensures the tensor shape is correct in the model and normalises the data in the range [0,1]as done in training. A second endpoint has also been set up that enables users to input a public URL to an image and have the model predict the digit. This has not been the primary focus of the project but enables users to test out individual images for fun/debugging.  
-
-The inference endpoint will then be hosted on AWS (Azure/GCP also viable, I just have more experience with AWS), using Elastic Beanstalk to manage infrastructure deployment. We could set up compute and autoscaling/load balancing manually with more fine-grained control but this would require far more setup time. Kubernetes-based solutions were also considered but deemed overkill for the scale of the project. AWS Sagemaker also offers managed host solutions - had model development been performed with Sagemaker, I would have been included to use this solution. Application monitoring and alerts can be easily managed through Elastic Beanstalk Health and Monitoring dashboards. Given more time we would set up alerts if the unusual activity, loads, or slow latency times were detected. Logs can also be extracted from the Elastic Beanstalk Logs tab, although these are automatically generated through the Uvicorn service. Given more time we would most likely want to set up custom logging for specific events of interest. Once deployed with have implemented a set of tests for the hosted endpoint to ensure it meets our SLOs.
-
-Additional elements outside the scope of the plan are discussed in the 'Considerations out of scope' section.
+The plan for this solution involves creating an online inference REST API which takes JSON input holding a list of images, with features represented as floats in a list. This enables us to batch together predictions for more efficient inference. The inference endpoint will then be hosted on AWS, using Elastic Beanstalk to manage infrastructure deployment. We could set up compute and autoscaling/load balancing manually with more fine-grained control but this would require far more setup time. AWS Sagemaker also offers managed host solutions. Application monitoring and alerts can be easily managed through Elastic Beanstalk Health and Monitoring dashboards. Logs can also be extracted from the Elastic Beanstalk Logs tab, these are automatically generated through the Uvicorn service.
 
 The detailed plan can be seen below:
 
 - [X] Create inference API using FastAPI. (alternatives such as Flask, TensorFlow and PyTorch Serving could achieve a similar effect). Why an API? By creating a standalone inference microservice, the model can be integrated with several apps which can call the API a black box, rather than worry about what is going on under the hood. 
 - [X] Containerisation - Docker container for the prediction API.
 - [X] Batching online prediction for performance. Can batch list inputs, currently no batch endpoint for raw image files. 
-- [X] Cloud deployment - AWS for deployment using Elastic Beanstalk with EC2 instances. In future could test hardware acceleration such as GPUs and AWS Inferentia. With more time, we would set up a data streaming solution (AWS Kinesis or Apache Kafka) and a real-time analytics service (Apache Flink) to manage the auto-scaling in response to traffic patterns. "Serverless" solutions such as AWS Lambda were considered but given the business context would expect some consistent level of traffic, it was deemed unsuitable. Kubernetes-based solutions were also considered, using EKS/ECS, but due to the smaller scale and cost considerations of the project, these were not pursued. 
+- [X] Cloud deployment - AWS for deployment using Elastic Beanstalk with EC2 instances.
 - [X] Auto scaling and load balancing - Our Elastic Beanstalk service creates an Auto Scaling Group and Elastic Load Balancer to route traffic to the EC2 instances running our endpoints. 
 - [X] Application Monitoring - metrics, logs, tracing (API latency, log errors, service health metrics).
 - [X] Model Observability - prediction distribution (compared to training distribution), data quality. A model card with the key model metrics and details can be seen in the docs directory.  
-- [X] IaC - As far as possible follow engineering best practices by defining infrastructure as code. Define bash scripts to build and push Docker Images, Deploy Infrastructure using Elastic Beanstalk script. Create automated unit tests using pytest that tests if the endpoint achieves the objectives and how it behaves with unexpected inputs. Ideally, we would automate to ensure these tests are run on any new endpoint before it replaces an existing production version.
+- [X] IaC - As far as possible follow engineering best practices by defining infrastructure as code. Define bash scripts to build and push Docker Images, Deploy Infrastructure using Elastic Beanstalk script. Create automated unit tests using pytest that tests if the endpoint achieves the objectives and how it behaves with unexpected inputs.
 - [X] Testing - To ensure the model is meating the project objectives, engineering and data science objectives, we have implimented a set of tests using pytest in the test directory. This should comfirm the hosted model is acheiving the latency and performance requirements, and handles errors gracefully.  
-
-## Considerations out of scope
-
-* **Test in production** - Shadow Testing, A/B Testing, Canary Release, Bandits. If we had existing models in production, we would want to test our new model to understand how it compares to the existing production models. For example by gradually routing more traffic to the model if production evaluation shows it is outperforming the other models (A/B testing).
  
-* **Pre-production stages of ML lifecycle** - Data Engineering, Training Data, Feature Engineering, Model Development and Testing.
-  * Data Engineering: Ideally we would store the data gathered by the live application, and the already gathered training data in a data lake. We would set up a data engineering pipeline to transform the raw image data into the image format used by the model. We could perfrom this jobs in batch using a pre-defined enginerring pipeline, schedular, orchastrastor (e.g. using Sagemaker Pipelines, Kedro, Airflow, Argo, MetaFlow). These same pipelines can also be used to kick-off a model training job. 
-  * Training Data: Generally we would like to use as much data as possible for training, and testing the model on 'fresh' data that would be ingested by the live model. Because we have little data at this point, sampling methods are not of great importance. When training our models, we do want to keep track of the data lineage, to tell us what data we used to train the model. This can be integrated into Experiment Tracking and Model Registries (e.g. using mlFlow or Sagemaker Experiments). In future, I would expect to consider methods such as data augmentation, to increase the training set size, whilst retaining accurate labels, using image transformation like rotations, cropping, inverting, etc. We may also utilise Data Synthesis, using high-confidence model predictions to label images, using these for training new models. Similarly, GANs can be used to generate more training data when it is hard to come by.  
-  * Feature Engineering: There is little feature engineering required for the images. The core components are image resizing to achieve the 28 x 28 scale the model expects, converting to greyscale (28 x 28 x 3 -> 28 x 28 x 1), and normalising the values in the range of [0,1]. These are relatively cheap operations so can be done in real-time. There are a couple of approaches to resizing and converting to greyscale, so in the future, I would expect to try each of these approaches to see how they affect performance.       
-  * Model Development and Testing: To further validate the model performance, we may want to compare the simple CNN trained here to other more complex models, such as ensembles, or simpler baselines. We would want to evaluate these based on test accuracy and latency. Experiment tracking is important when comparing models. We may want to track: training and validation loss curves, performance metrics like accuracy, logs of predictions vs ground truth labels (check if specific classes are cuaing issues), inference speed, memory and CPU/GPU utilisation, and hyperparameters. These can be tracked by tools such as Sagemaker experiments or mlFlow. Model versioning is also important with tools such as mlFlow and Sagemaker offering solutions. With larger models, we may have to consider distributed training (model or data parallelism), but given the simplicity of the task and latency constraints, this is unlikely to affect this project. We may want to train our CNN models using GPUs to speed up training. This can be done easily using cloud providers like AWS. We would also want to complete an more exhaustive hyperparameter search in order to find the best configuration for our model. This could be done using a simple grid-search or Bayesian Optimisation using Tensoflow's Keras Tuner.  
-
-* **Model compression** - consider Quantisation of model, e.g. using half-precision (16-bit) or fixed-point (8-bit ints) to represent model parameters. This should reduce computation and memory footprint, but may drop accuracy too much. 
-
-* **Continual learning** - in a production system we would store new incoming data in a datalake, alongside logs, predictions, and application data, which we could use for further training.
-
-* **Human-in-the-loop feedback** - For low probability predictions, we may want to include human feedback/labels. Interesting video on the topic of how poorly written addresses are handled [here](https://www.youtube.com/watch?v=XxCha4Kez9c). We may also want to include a group of human labellers to further create a larger, more diverse, training set for future model improvements.  
-
-* **Batch features** - The only features for this app come streaming from the request. More complex model applications may use a combination of streaming and batch features. Batch features may be stored in data warehouses, for example, we may store the median food preparation time for a restaurant when predicting the estimated delivery time for a food delivery app. 
-
-* **Edge Serving** - to decrease latency we may deploy the model on an edge device to the postal sorting office, which will decrease the time taken to transfer data to an off-prem cloud server. New models could be trained offline and stored in the model registry, and periodically pushed to edge devices. Edge serving comes with benefits in latency, efficient network usage, privacy and security, and reliability. But they may have less compute/memory for larger models, so quantization may be key for success.
-
-* **Data Distributional Shifts** - the training data has a roughly equal class distribution, but this may not be the same as the class distribution in production, e.g. we may expect far may 0s than 9s. Further, the input format of the training images is very consistent, e.g. white digits on a clean black background vertically aligned at a 28 x 28 scale. In real life the images may on a different scale, coloured, or not vertically aligned. This requires processing the image into the correct format which may look quite different to the training data. The difference could be as simple as having white writing on a dark background, something not encountered in training, but we would expect significantly worse performance if this were the case.  
-
-* **Data Monitoring** - linking to the above, we want to automate input data monitoring for features like freshness, volume, distribution, and model fairness.
-
-* **Explainability** - Given the nature of the task (predicting zip codes), prediction explainability is not a major concern. We could evaluate the model using [SHAP](https://github.com/slundberg/shap) to understand which pixels are most important to a model's prediction. 
-
-* **Business Impact Metrics** - The (assumed) end goal of the project is to reduce the overall cost and time taken to deliver the post. This sub-project of classifying digits of zip codes, presumably at a sorting office, should therefore aim to sort posts quickly. Accuracy is vital as the misdirected post could drastically increase the expected delivery time and associated costs. To validate the benefit we must compare this process to the baseline (e.g. human sorting). If any accuracy is lost in changing to the ML model, we must factor in the time and cost to correct mistakes in our evaluation.  
-
 ## Setup
 
 If you would like to run the code in this repository firstly you need to create a new environment with Python version 3.9 and install the necessary dependencies. If using Conda to manage your environment this can be achieved using the below commands from the root of the repo:
